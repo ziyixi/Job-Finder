@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "job-finder"
+version = "0.1.0"
+description = ""
+authors = ["Ziyi Xi <ziyixi@mail.ustc.edu.cn>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "job_finder"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+Scrapy = "^2.8.0"
+scrapy-playwright = "^0.0.26"
+python-dateutil = "^2.8.2"
+
+
+[tool.poetry.group.dev.dependencies]
+autopep8 = "^2.0.2"
+pylint = "^2.16.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
