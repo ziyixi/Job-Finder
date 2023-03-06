@@ -22,13 +22,26 @@ class GoogleSpider(scrapy.Spider):
             self.logger.info(f"No job posts found for {response.url}")
             return
 
+        count = 0
         for i, each in enumerate(all_job_posts):
             try:
                 jobitem = self.parse_job_item(each)
                 yield jobitem
+                count += 1
             except:
                 self.logger.error(
                     f"Error parsing job item {i} in {response.url}")
+        self.logger.info(f"Handled {count} job posts in {response.url}")
+        print(f"@@@@@@@@ Handled {count} job posts in {response.url}")
+
+        next_page = response.xpath(
+            '//a[@data-gtm-ref="search-results-next-click"]/@href').get()
+        next_page_visiable = response.xpath(
+            '//a[@data-gtm-ref="search-results-next-click"]/@style').get() != "display: none;"
+        print(f"@@@@@@@@ Next page: {next_page} for {response.url}")
+
+        if (next_page is not None) and next_page_visiable:
+            yield response.follow(next_page, callback=self.parse, meta={"playwright": True})
 
     def parse_job_item(self, post_item: Selector):
         title = post_item.xpath(
