@@ -131,4 +131,7 @@ dmypy.json
 
 # others
 *.sqlite
+.vscode
+poetry.lock
+**/.git
 docker_test

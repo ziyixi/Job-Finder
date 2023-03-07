@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  ofelia:
+    image: mcuadros/ofelia:latest
+    container_name: ofelia_app
+    depends_on:
+      - job_finder
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  job_finder:
+    image: job_finder:test
+    container_name: job_finder_app
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.job_finder_app.schedule: "@every 1h"
+      ofelia.job-exec.job_finder_app.no-overlap: 'true'
+      ofelia.job-exec.job_finder_app.command: "sh run_job.sh > log.txt"
+    volumes:
+      - ./docker_test/log.txt:/app/job_finder/log.txt
+      - ./docker_test/job_finder.sqlite:/app/job_finder/job_finder.sqlite
+
+  sqlite-web:
+    image: sqlite-web:test
+    container_name: sqlite-web_app
+    depends_on:
+      - job_finder
+    volumes:
+      - ./docker_test:/data
+    env_file: ./docker_test/sqlite_web.env
+    ports:
+      - "8080:8080"
