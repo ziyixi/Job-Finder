@@ -1,4 +1,6 @@
 FROM python:3.9.16-slim
+LABEL org.opencontainers.image.source=https://github.com/ziyixi/Job-Finder
+
 ENV SQLITE_WEB_PASSWORD="placeholder"
 ENV SQLITE_DATABASE=/data/job_finder.sqlite
 ENV PYTHONUNBUFFERED=true
@@ -8,4 +10,5 @@ VOLUME /data
 WORKDIR /data
 
 RUN pip install sqlite-web
+
 CMD ["sh", "-c", "sqlite_web --host 0.0.0.0 -x -P -r $SQLITE_DATABASE"]
