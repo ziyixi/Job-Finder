@@ -26,52 +26,57 @@ class GoogleSpider(scrapy.Spider):
         for i, each in enumerate(all_job_posts):
             try:
                 jobitem = self.parse_job_item(each)
-                yield jobitem
-                count += 1
+                if jobitem.id != None:
+                    yield jobitem
+                    count += 1
+                else:
+                    self.logger.error(
+                        f"Error parsing job item {i} in {response.url}")
             except:
                 self.logger.error(
                     f"Error parsing job item {i} in {response.url}")
         self.logger.info(f"Handled {count} job posts in {response.url}")
-        print(f"@@@@@@@@ Handled {count} job posts in {response.url}")
 
         next_page = response.xpath(
             '//a[@data-gtm-ref="search-results-next-click"]/@href').get()
         next_page_visiable = response.xpath(
             '//a[@data-gtm-ref="search-results-next-click"]/@style').get() != "display: none;"
-        print(f"@@@@@@@@ Next page: {next_page} for {response.url}")
 
         if (next_page is not None) and next_page_visiable:
             yield response.follow(next_page, callback=self.parse, meta={"playwright": True})
 
     def parse_job_item(self, post_item: Selector):
         title = post_item.xpath(
-            '//h2[@itemprop="title"]/text()').get().strip()
+            './/h2[@itemprop="title"]/text()').get().strip()
         city_parsed = post_item.xpath(
-            '//span[@itemprop="addressLocality"]/text()')
+            './/span[@itemprop="addressLocality"]/text()')
         if city_parsed:
             city = city_parsed.get().strip()
         else:
             city = ""
         country_parsed = post_item.xpath(
-            '//span[@itemprop="addressCountry"]/text()')
+            './/span[@itemprop="addressCountry"]/text()')
         if country_parsed:
             country = country_parsed.get().strip()
         else:
             country = ""
 
         date = post_item.xpath(
-            '//meta[@itemprop="datePosted"]/@content').get().strip()
+            './/meta[@itemprop="datePosted"]/@content').get().strip()
         description = post_item.xpath(
-            '//meta[@itemprop="description"]/@content').get().strip()
+            './/meta[@itemprop="description"]/@content').get().strip()
+        relative_url = post_item.xpath('.//@href').get()
+        # relative_url: https://careers.google.com/jobs/results/113538880541467334-student-researcher-phd-2023/?distance=50&q=phd
+        # unique_id: 113538880541467334
+        unique_id = post_item.xpath('.//@href').re_first(r'(\d+)-')
 
         item = JobItem(
-            id=f"{title}, {city}{country}",
+            id=unique_id,
             title=title,
             company="Google",
             location=city+country,
             description=description,
-            url=self.settings.get("GOOGLE_BASE_URL") +
-            post_item.xpath('//@href').get(),
+            url=self.settings.get("GOOGLE_BASE_URL") + relative_url,
             date=parser.parse(date),
         )
         return item
