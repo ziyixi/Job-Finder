@@ -26,4 +26,4 @@ RUN playwright install firefox \
     && playwright install-deps
 WORKDIR /app/job_finder
 
-CMD ["sh", "-c", "sh run_job.sh > log.txt; tail -f /dev/null"]
+CMD ["sh", "-c", "sleep 120; sh run_job.sh > log.txt; tail -f /dev/null"]
