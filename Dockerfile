@@ -22,8 +22,8 @@ LABEL org.opencontainers.image.source=https://github.com/ziyixi/Job-Finder
 ENV PATH="/app/.venv/bin:$PATH"
 
 COPY --from=poetry /app /app
-RUN playwright install firefox \
+RUN playwright install chromium \
     && playwright install-deps
 WORKDIR /app/job_finder
 
-CMD ["sh", "-c", "sleep 120; sh run_job.sh > log.txt; tail -f /dev/null"]
+CMD ["sh", "-c", "sh run_job.sh > log.txt; tail -f /dev/null"]
