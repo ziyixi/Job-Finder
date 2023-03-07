@@ -56,7 +56,7 @@ class UpdateDbPipeline:
         --beginsql
         DELETE FROM {self.new_table_name} WHERE company = ? AND created_at < ?
         --endsql
-        """, (spider.name, str(self.now - timedelta(days=0))))
+        """, (spider.name, str(self.now - timedelta(days=self.new_table_preserve_days))))
         # update lastaccess to 0 for all items from this company
         self.cur.execute(f"""
         --beginsql
