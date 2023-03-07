@@ -108,6 +108,11 @@ DOWNLOADER_MIDDLEWARES = {
 RETRY_TIMES = 50
 
 ############ ===================== ############
+# sqlite
+SQLITE_DB_PATH = "job_finder.sqlite"
+SQLITE_TABLE_NAME = "JOBS"
+SQLITE_NEW_TABLE_NAME = "NEW_JOBS"
+
 # Google careers
 GOOGLE_BASE_URL = "https://careers.google.com"
 GOOGLE_KEY_WORDS = ["phd", "2024", "grad", "new grad"]

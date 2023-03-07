@@ -73,7 +73,7 @@ class GoogleSpider(scrapy.Spider):
         item = JobItem(
             id=unique_id,
             title=title,
-            company="Google",
+            company=self.name,
             location=city+country,
             description=description,
             url=self.settings.get("GOOGLE_BASE_URL") + relative_url,
