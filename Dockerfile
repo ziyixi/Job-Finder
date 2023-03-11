@@ -20,8 +20,10 @@ FROM python as runtime
 LABEL org.opencontainers.image.source=https://github.com/ziyixi/Job-Finder
 
 ENV PATH="/app/.venv/bin:$PATH"
+ENV NOTION_TOKEN="NOTION_TOKEN"
+ENV NOTION_PAGE_ID="NOTION_PAGE_ID"
 
 COPY --from=poetry /app /app
 WORKDIR /app/job_finder
 
-CMD ["sh", "-c", "playwright install chromium; playwright install-deps; sh run_job.sh > log.txt; tail -f /dev/null"]
+CMD ["sh", "-c", "playwright install chromium; playwright install-deps; sh run_job.sh; tail -f /dev/null"]

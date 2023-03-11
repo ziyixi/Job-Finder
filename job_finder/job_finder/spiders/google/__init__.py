@@ -26,12 +26,11 @@ class GoogleSpider(scrapy.Spider):
         for i, each in enumerate(all_job_posts):
             try:
                 jobitem = self.parse_job_item(each)
-                if jobitem.id != None:
+                if jobitem is not None:
                     yield jobitem
                     count += 1
                 else:
-                    self.logger.error(
-                        f"Error parsing job item {i} in {response.url}")
+                    continue
             except:
                 self.logger.error(
                     f"Error parsing job item {i} in {response.url}")
@@ -48,6 +47,9 @@ class GoogleSpider(scrapy.Spider):
     def parse_job_item(self, post_item: Selector):
         title = post_item.xpath(
             './/h2[@itemprop="title"]/text()').get().strip()
+        for exclude in self.settings.get("GOOGLE_EXCLUDE_KEY_WORDS"):
+            if title.lower().find(exclude.lower()) != -1:
+                return None
         city_parsed = post_item.xpath(
             './/span[@itemprop="addressLocality"]/text()')
         if city_parsed:

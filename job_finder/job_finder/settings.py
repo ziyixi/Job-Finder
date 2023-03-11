@@ -112,9 +112,11 @@ RETRY_TIMES = 50
 SQLITE_DB_PATH = "job_finder.sqlite"
 SQLITE_TABLE_NAME = "JOBS"
 SQLITE_NEW_TABLE_NAME = "NEW_JOBS"
-SQLITE_NEW_TABLE_PRESERVE_DAYS = 5
+SQLITE_NEW_TABLE_PRESERVE_DAYS = 2
 
 # Google careers
 GOOGLE_BASE_URL = "https://careers.google.com"
 GOOGLE_KEY_WORDS = ["phd", "2024", "grad", "new grad"]
+GOOGLE_EXCLUDE_KEY_WORDS = ["senior", "manager",
+                            "director", "lead", "princip", "staff", "III", "IV", "MBA"]
 GOOGLE_SEARCH_URL = GOOGLE_BASE_URL+"/jobs/results/?distance=50&q="  # + KEY_WORDS
