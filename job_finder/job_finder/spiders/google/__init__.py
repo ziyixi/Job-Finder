@@ -2,6 +2,7 @@ import scrapy
 from dateutil import parser
 from job_finder.items import JobItem
 from scrapy.selector.unified import Selector
+from scrapy_playwright.page import PageMethod
 
 
 class GoogleSpider(scrapy.Spider):
@@ -13,7 +14,13 @@ class GoogleSpider(scrapy.Spider):
         key_words = self.settings.get("GOOGLE_KEY_WORDS")
         urls = [f"{search_url}{key_word}" for key_word in key_words]
         for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, meta={"playwright": True})
+            yield scrapy.Request(url=url, callback=self.parse, meta=dict(
+                playwright=True,
+                playwright_page_methods=[
+                    PageMethod(
+                        "evaluate", "window.scrollBy(0, document.body.scrollHeight)"),
+                    PageMethod("wait_for_timeout", 1000),
+                ],))
 
     def parse(self, response):
         all_job_posts = response.xpath(
@@ -42,7 +49,13 @@ class GoogleSpider(scrapy.Spider):
             '//a[@data-gtm-ref="search-results-next-click"]/@style').get() != "display: none;"
 
         if (next_page is not None) and next_page_visiable:
-            yield response.follow(next_page, callback=self.parse, meta={"playwright": True})
+            yield response.follow(next_page, callback=self.parse, meta=dict(
+                playwright=True,
+                playwright_page_methods=[
+                    PageMethod(
+                        "evaluate", "window.scrollBy(0, document.body.scrollHeight)"),
+                    PageMethod("wait_for_timeout", 1000),
+                ],))
 
     def parse_job_item(self, post_item: Selector):
         title = post_item.xpath(

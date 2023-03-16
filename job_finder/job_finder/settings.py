@@ -105,7 +105,7 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
     'job_finder.middlewares.CustomRetryMiddleware': 550,
 }
-RETRY_TIMES = 50
+RETRY_TIMES = 20
 
 ############ ===================== ############
 # sqlite
@@ -120,3 +120,9 @@ GOOGLE_KEY_WORDS = ["phd", "2024", "grad", "new grad"]
 GOOGLE_EXCLUDE_KEY_WORDS = ["senior", "manager",
                             "director", "lead", "princip", "staff", "III", "IV", "MBA"]
 GOOGLE_SEARCH_URL = GOOGLE_BASE_URL+"/jobs/results/?distance=50&q="  # + KEY_WORDS
+
+# Amazon careers
+AMAZON_BASE_URL = "https://www.amazon.jobs"
+AMAZON_KEY_WORDS = ["2023", "2024", "phd"]
+AMAZON_LOOKUP_PAGES = 10
+AMAZON_SEARCH_URL = "https://www.amazon.jobs/en/search?offset={offset_count}&result_limit=10&sort=recent&category%5B%5D=software-development&category%5B%5D=machine-learning-science&category%5B%5D=research-science&category%5B%5D=data-science&job_type%5B%5D=Full-Time&country=USA"

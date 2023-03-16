@@ -114,6 +114,6 @@ class CustomRetryMiddleware(RetryMiddleware):
             return self._retry(request, reason, spider) or response
 
         # this is your check
-        if response.status == 200 and len(response.xpath(spider.retry_xpath)) == 0:
+        if response.status == 200 and hasattr(spider, "retry_xpath") and len(response.xpath(spider.retry_xpath)) == 0:
             return self._retry(request, f"retry for {response.url} as it's empty", spider) or response
         return response
