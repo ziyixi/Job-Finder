@@ -11,50 +11,12 @@ from job_finder.settings import SQLITE_DB_PATH
 
 def construct_properties(title, id, company, location, url, created_at):
     properties = {
-        "Title": {
-            "title": [
-                {
-                    "text": {
-                        "content": title
-                    }
-                }
-            ]
-        },
-        "Id": {
-            "rich_text": [
-                {
-                    "text": {
-                        "content": id
-                    }
-                }
-            ]
-        },
-        "Company": {
-            "rich_text": [
-                {
-                    "text": {
-                        "content": company
-                    }
-                }
-            ]
-        },
-        "Location": {
-            "rich_text": [
-                {
-                    "text": {
-                        "content": location
-                    }
-                }
-            ]
-        },
-        "URL": {
-            "url": url
-        },
-        "Created At": {
-            "date": {
-                "start": created_at
-            }
-        }
+        "Title": {"title": [{"text": {"content": title}}]},
+        "Id": {"rich_text": [{"text": {"content": id}}]},
+        "Company": {"rich_text": [{"text": {"content": company}}]},
+        "Location": {"rich_text": [{"text": {"content": location}}]},
+        "URL": {"url": url},
+        "Created At": {"date": {"start": created_at}},
     }
     return properties
 
@@ -65,40 +27,21 @@ def construct_children(description):
             "object": "block",
             "type": "paragraph",
             "paragraph": {
-                "rich_text": [
-                    {
-                        "text": {
-                            "content": description[:2000]
-                        }
-                    }
-                ]
-            }
+                "rich_text": [{"text": {"content": description[:2000]}}],
+            },
         }
     ]
     return children
 
 
 def get_all_new_jobs_today():
-    # references new jobs table:
-    # CREATE TABLE NEW_JOBS  (
-    #   id TEXT,
-    #   title TEXT,
-    #   company TEXT,
-    #   location TEXT,
-    #   description TEXT,
-    #   url TEXT,
-    #   date DATE,
-    #   created_at DATE,
-    #   PRIMARY KEY(id,company)
-    # )
     conn = sqlite3.connect(SQLITE_DB_PATH)
     cursor = conn.cursor()
 
-    cursor.execute("""
-    --beginsql
-    SELECT * FROM NEW_JOBS WHERE created_at >= ?
-    --endsql
-    """, (str(datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)),))
+    start_of_day = str(datetime.now().replace(
+        hour=0, minute=0, second=0, microsecond=0))
+    cursor.execute(
+        "SELECT * FROM NEW_JOBS WHERE created_at >= ?", (start_of_day,))
 
     rows = cursor.fetchall()
     conn.close()
@@ -106,48 +49,43 @@ def get_all_new_jobs_today():
 
 
 def get_id_and_company_from_notion(notion, page_id):
-    # only query today's results
-    id_and_company = []
-    for rows in iterate_paginated_api(notion.databases.query, **{
+    start_of_day = str(datetime.now().replace(
+        hour=0, minute=0, second=0, microsecond=0))
+    query_params = {
         "database_id": page_id,
-        "filter": {
-            "property": "Created At",
-            "date": {
-                "on_or_after": str(datetime.now().replace(hour=0, minute=0, second=0, microsecond=0))
-            }
-        }
-    }):
-        if rows:
-            for row in rows:
-                id_and_company.append((row["properties"]["Id"]["rich_text"][0]["plain_text"],
-                                      row["properties"]["Company"]["rich_text"][0]["plain_text"],))
+        "filter": {"property": "Created At", "date": {"on_or_after": start_of_day}},
+    }
+
+    id_and_company = [
+        (row["properties"]["Id"]["rich_text"][0]["plain_text"],
+         row["properties"]["Company"]["rich_text"][0]["plain_text"])
+        for rows in iterate_paginated_api(notion.databases.query, **query_params)
+        if rows
+        for row in rows
+    ]
     return id_and_company
 
 
 def filter_jobs(new_job_rows, id_and_company_from_notion):
-    # filter out jobs that are already in notion (primary key is id and company)
-    id_and_company_from_notion = set(id_and_company_from_notion)
-    filtered_jobs = []
-    for row in new_job_rows:
-        if (row[0], row[2]) not in id_and_company_from_notion:
-            filtered_jobs.append(row)
-    return filtered_jobs
+    id_and_company_set = set(id_and_company_from_notion)
+    return [row for row in new_job_rows if (row[0], row[2]) not in id_and_company_set]
 
 
 if __name__ == "__main__":
     notion = Client(auth=os.getenv("NOTION_TOKEN"))
     page_id = os.getenv("NOTION_PAGE_ID")
+
     id_and_company_from_notion = get_id_and_company_from_notion(
         notion, page_id)
     new_job_rows = get_all_new_jobs_today()
     filtered_jobs = filter_jobs(new_job_rows, id_and_company_from_notion)
-    for i, job in enumerate(filtered_jobs):
+
+    for index, job in enumerate(filtered_jobs):
         logger.info(
-            f"Creating page {i+1} of {len(filtered_jobs)}, with id {job[0]} and company {job[2]}")
+            f"Creating page {index + 1} of {len(filtered_jobs)}, with id {job[0]} and company {job[2]}")
+
         notion.pages.create(**{
-            "parent": {
-                "database_id": page_id
-            },
+            "parent": {"database_id": page_id},
             "properties": construct_properties(
                 title=job[1],
                 id=job[0],
