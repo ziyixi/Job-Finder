@@ -116,13 +116,20 @@ SQLITE_NEW_TABLE_PRESERVE_DAYS = 2
 
 # Google careers
 GOOGLE_BASE_URL = "https://careers.google.com"
-GOOGLE_KEY_WORDS = ["phd", "2024", "grad", "new grad"]
+GOOGLE_KEY_WORDS = ["phd", "24", "grad", "new grad", "23"]
 GOOGLE_EXCLUDE_KEY_WORDS = ["senior", "manager",
                             "director", "lead", "princip", "staff", "III", "IV", "MBA"]
 GOOGLE_SEARCH_URL = GOOGLE_BASE_URL+"/jobs/results/?distance=50&q="  # + KEY_WORDS
 
 # Amazon careers
 AMAZON_BASE_URL = "https://www.amazon.jobs"
-AMAZON_KEY_WORDS = ["2023", "2024", "phd"]
+AMAZON_KEY_WORDS = ["23", "24", "phd", "grad"]
 AMAZON_LOOKUP_PAGES = 10
 AMAZON_SEARCH_URL = "https://www.amazon.jobs/en/search?offset={offset_count}&result_limit=10&sort=recent&category%5B%5D=software-development&category%5B%5D=machine-learning-science&category%5B%5D=research-science&category%5B%5D=data-science&job_type%5B%5D=Full-Time&country=USA"
+
+# Microsoft careers
+MICROSOFT_BASE_URL = "https://careers.microsoft.com"
+MICROSOFT_KEY_WORDS = ["23", "24", "phd", "grad"]
+MICROSOFT_EXCLUDE_KEY_WORDS = ["Research Intern", "Post Doc"]
+MICROSOFT_SEARCH_URL = "https://careers.microsoft.com/students/us/en/search-results"
+MICROSOFT_COUNTRYS = ["United States", "China", "US"]
