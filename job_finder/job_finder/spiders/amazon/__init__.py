@@ -69,7 +69,7 @@ class AmazonSpider(scrapy.Spider):
         key_words = self.settings.get("AMAZON_KEY_WORDS", [])
         flag_should_return_None = True
         for key_word in key_words:
-            if key_word in title or key_word in description:
+            if key_word.lower() in title.lower() or key_word.lower() in description.lower():
                 flag_should_return_None = False
                 break
         if flag_should_return_None:

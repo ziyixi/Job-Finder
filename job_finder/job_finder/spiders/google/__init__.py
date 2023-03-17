@@ -85,6 +85,15 @@ class GoogleSpider(scrapy.Spider):
         # unique_id: 113538880541467334
         unique_id = post_item.xpath('.//@href').re_first(r'(\d+)-')
 
+        key_words = self.settings.get("GOOGLE_KEY_WORDS", [])
+        flag_should_return_None = True
+        for key_word in key_words:
+            if key_word.lower() in title.lower() or key_word.lower() in description.lower():
+                flag_should_return_None = False
+                break
+        if flag_should_return_None:
+            return None
+
         item = JobItem(
             id=unique_id,
             title=title,
