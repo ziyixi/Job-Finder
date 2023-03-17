@@ -11,8 +11,10 @@ class AmazonSpider(scrapy.Spider):
 
     def start_requests(self):
         search_url = self.settings.get("AMAZON_SEARCH_URL")
-        urls = [search_url.format(offset_count=ipage*10)
-                for ipage in range(self.settings.get("AMAZON_LOOKUP_PAGES"))]
+        lookup_pages = self.settings.get("AMAZON_LOOKUP_PAGES")
+        urls = [search_url.format(offset_count=page * 10)
+                for page in range(lookup_pages)]
+
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse, meta=dict(
                 playwright=True,
@@ -20,31 +22,28 @@ class AmazonSpider(scrapy.Spider):
                     PageMethod(
                         "evaluate", "window.scrollBy(0, document.body.scrollHeight)"),
                     PageMethod("wait_for_timeout", 1000),
-                ],))
+                ],
+            ))
 
     def parse(self, response: scrapy.http.Response):
-        all_job_posts = response.xpath(
-            '//*[@class="job-tile"]')
+        all_job_posts = response.xpath('//*[@class="job-tile"]')
 
         count = 0
-        for i, each in enumerate(all_job_posts):
+        for index, post in enumerate(all_job_posts):
             try:
-                jobitem = self.parse_job_item(each)
-                if jobitem is not None:
+                jobitem = self.parse_job_item(post)
+                if jobitem:
                     yield jobitem
                     count += 1
-                else:
-                    continue
             except:
                 self.logger.error(
-                    f"Error parsing job item {i} in {response.url}")
+                    f"Error parsing job item {index} in {response.url}")
+
         self.logger.info(f"Handled {count} job posts in {response.url}")
 
     def parse_job_item(self, post_item: Selector):
         title = post_item.xpath(".//*[@class='job-title']/text()").get()
 
-        # example result: "USA, TX, Austin | Job ID: 2341183", we want to parse location and id separately
-        # also reverse the order of location, to be Austin, TX, USA
         location_and_id = post_item.xpath(
             ".//*[@class='location-and-id']/text()").get()
         location = location_and_id.split("|")[0].strip()
@@ -52,31 +51,21 @@ class AmazonSpider(scrapy.Spider):
 
         job_id = location_and_id.split("|")[1].split(":")[1].strip()
 
-        # example output: Posted March 16, 2023
-        # the return value should be in type datetime.date
-        date = post_item.xpath(".//*[@class='posting-date']/text()").get()
-        date = date.split("Posted ")[1]
+        date_text = post_item.xpath(".//*[@class='posting-date']/text()").get()
+        date = date_text.split("Posted ")[1]
         date = parser.parse(date).date()
 
         description_list = post_item.xpath(
             ".//*[@class='qualifications-preview']//li")
-        description = ""
-        for i, each in enumerate(description_list):
-            description += f"({i+1}).{each.xpath('text()').get()} "
+        description = "".join(
+            f"({index + 1}).{item.xpath('text()').get()} " for index, item in enumerate(description_list))
 
-        # if either title or description contain keywords, we will return the item
-        # otherwise, return None
         key_words = self.settings.get("AMAZON_KEY_WORDS", [])
-        flag_should_return_None = True
-        for key_word in key_words:
-            if key_word.lower() in title.lower() or key_word.lower() in description.lower():
-                flag_should_return_None = False
-                break
-        if flag_should_return_None:
+        if not any(keyword.lower() in title.lower() or keyword.lower() in description.lower() for keyword in key_words):
             return None
 
         relative_url = post_item.xpath(".//*[@class='job-link']/@href").get()
-        url = self.settings.get("AMAZON_BASE_URL")+relative_url
+        url = self.settings.get("AMAZON_BASE_URL") + relative_url
 
         item = JobItem(
             id=job_id,
@@ -87,4 +76,5 @@ class AmazonSpider(scrapy.Spider):
             url=url,
             date=date,
         )
+
         return item
