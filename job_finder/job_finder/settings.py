@@ -113,6 +113,8 @@ SQLITE_DB_PATH = "job_finder.sqlite"
 SQLITE_TABLE_NAME = "JOBS"
 SQLITE_NEW_TABLE_NAME = "NEW_JOBS"
 SQLITE_NEW_TABLE_PRESERVE_DAYS = 2
+COMPANIES = ["google", "amazon", "microsoft"]
+THRESHOLD_NO_APPEAR_DAYS = 3
 
 # Google careers
 GOOGLE_BASE_URL = "https://careers.google.com"

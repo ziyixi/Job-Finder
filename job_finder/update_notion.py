@@ -80,6 +80,7 @@ if __name__ == "__main__":
     new_job_rows = get_all_new_jobs_today()
     filtered_jobs = filter_jobs(new_job_rows, id_and_company_from_notion)
 
+    logger.info(f"Found {len(filtered_jobs)} new jobs")
     for index, job in enumerate(filtered_jobs):
         logger.info(
             f"Creating page {index + 1} of {len(filtered_jobs)}, with id {job[0]} and company {job[2]}")
@@ -96,3 +97,4 @@ if __name__ == "__main__":
             ),
             "children": construct_children(job[4])
         })
+    logger.success("Finished creating pages")
